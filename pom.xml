@@ -14,4 +14,16 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>SimpleHttpServer</mainClass> <!-- Replace with your main class -->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
