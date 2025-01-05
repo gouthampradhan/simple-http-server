@@ -1,6 +1,9 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -32,23 +35,29 @@ public class SimpleHttpServer {
              OutputStream outputStream = socket.getOutputStream()) {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 
-            //Ideally the below line needs a null check. But, I am ignoring this for now because this is only a simple example
+            //The below line could be null. Therefore, composing this with Optional
             String line = bufferedReader.readLine();
+            List<String> parts = Optional.ofNullable(line)
+                    .stream()
+                    .flatMap(x -> Arrays.stream(x.split(" ")))
+                    .toList();
 
-            String[] parts = line.split(" ");
-            String requestMethod = parts[0];
-            String path = parts[1];
+            //The first part is GET method and second part is the URL path. Consider it invalid if there are less than
+            //two parts
+            if (parts.size() >= 2) {
+                String requestMethod = parts.get(0);
+                String path = parts.get(1);
+                if ("GET".equalsIgnoreCase(requestMethod) && "/messages".equalsIgnoreCase(path)) {
+                    writeResponse(outputStream);
+                }
+            }
 
-            //Uncomment the below line if you would like to simulate a delay
-
+            //Uncomment the below lines if you would like to simulate a delay
 //            try{
 //                Thread.sleep(1000); //sleep duration in ms
 //            }catch (InterruptedException e) {
 //                throw new RuntimeException(e);
 //            }
-            if ("GET".equalsIgnoreCase(requestMethod) && "/messages".equalsIgnoreCase(path)) {
-                writeResponse(outputStream);
-            }
         } catch (IOException e) {
             System.out.println("Failed to handle request " + e.getMessage());
         } finally {
@@ -70,6 +79,5 @@ public class SimpleHttpServer {
                 message;
         outputStream.write(httpResponse.getBytes());
         outputStream.flush();
-        outputStream.close();
     }
 }
